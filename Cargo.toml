@@ -1,19 +1,22 @@
 [package]
-name = "dfu-libusb"
-version = "0.5.2"
-authors = ["Cecile Tonglet <cecile.tonglet@cecton.com>"]
+name = "dfu-nusb"
+version = "0.1.0"
+authors = [
+  "Cecile Tonglet <cecile.tonglet@cecton.com>",
+  "Alexander Koval <kovalidis@gmail.com",
+]
 edition = "2018"
 license = "MIT OR Apache-2.0"
-description = "Implementation of DFU using libusb and dfu-core"
-repository = "https://github.com/dfu-rs/dfu-libusb"
-homepage = "https://github.com/dfu-rs/dfu-libusb"
-documentation = "https://docs.rs/dfu-libusb"
+description = "Implementation of DFU using nusb and dfu-core"
+repository = "https://github.com/anti-social/dfu-nusb"
+homepage = "https://github.com/anti_social/dfu-nusb"
 readme = "README.md"
-keywords = ["dfu", "libusb"]
+keywords = ["dfu", "nusb"]
 
 [dependencies]
+bytes = "1.8.0"
 dfu-core = { version = "0.6", features = ["std"] }
-rusb = "0.9"
+nusb = { git = "https://github.com/kevinmehall/nusb.git", rev = "f8f23b2" }
 thiserror = "1"
 
 [dev-dependencies]

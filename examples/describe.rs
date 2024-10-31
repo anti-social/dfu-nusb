@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use dfu_core::DfuIo;
-use dfu_libusb::*;
+use dfu_nusb::*;
 
 #[derive(clap::Parser)]
 pub struct Cli {
@@ -40,12 +40,10 @@ impl Cli {
         };
         simplelog::SimpleLogger::init(log_level, Default::default())?;
         let (vid, pid) = device;
-        let context = rusb::Context::new()?;
 
-        let device: Dfu<rusb::Context> =
-            DfuLibusb::open(&context, vid, pid, intf, alt).context("could not open device")?;
+        let dev = DfuNusb::open(vid, pid, intf, alt)?;
 
-        println!("{:?}", device.into_inner().functional_descriptor());
+        println!("{:?}", dev.into_inner().functional_descriptor());
 
         Ok(())
     }

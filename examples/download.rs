@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use dfu_libusb::*;
+use dfu_nusb::*;
 use std::convert::TryFrom;
 use std::io;
 use std::io::Seek;
@@ -62,21 +62,20 @@ impl Cli {
         };
         simplelog::SimpleLogger::init(log_level, Default::default())?;
         let (vid, pid) = device;
-        let context = rusb::Context::new()?;
         let mut file = std::fs::File::open(path).context("could not open firmware file")?;
 
         let file_size = u32::try_from(file.seek(io::SeekFrom::End(0))?)
             .context("the firmware file is too big")?;
         file.seek(io::SeekFrom::Start(0))?;
 
-        let mut device: Dfu<rusb::Context> = match DfuLibusb::open(&context, vid, pid, intf, alt) {
+        let mut device: Dfu = match DfuNusb::open(vid, pid, intf, alt) {
             Err(Error::CouldNotOpenDevice) if wait => {
                 let bar = indicatif::ProgressBar::new_spinner();
                 bar.set_message("Waiting for device");
 
                 loop {
                     std::thread::sleep(std::time::Duration::from_millis(250));
-                    match DfuLibusb::open(&context, vid, pid, intf, alt) {
+                    match DfuNusb::open(vid, pid, intf, alt) {
                         Err(Error::CouldNotOpenDevice) => bar.tick(),
                         r => {
                             bar.finish();
@@ -115,7 +114,7 @@ impl Cli {
 
         match device.download(file, file_size) {
             Ok(_) => (),
-            Err(Error::LibUsb(..)) if bar.is_finished() => {
+            Err(Error::Transfer(..)) if bar.is_finished() => {
                 println!("USB error after upload; Device reset itself?");
                 return Ok(());
             }
