@@ -2,7 +2,7 @@ use std::time::Duration;
 use dfu_core::DfuProtocol;
 use dfu_core::functional_descriptor::FunctionalDescriptor;
 use dfu_core::memory_layout::MemoryLayout;
-use nusb::Device;
+use nusb::{Device, Interface};
 use nusb::transfer::{Control, ControlType, Recipient, TransferError};
 use thiserror::Error;
 
@@ -31,10 +31,10 @@ pub enum Error {
 }
 
 pub struct DfuNusb {
-    usb: Device,
+    dev: Device,
+    iface: Interface,
     protocol: DfuProtocol<MemoryLayout>,
     timeout: Duration,
-    iface: u16,
     functional_descriptor: FunctionalDescriptor,
 }
 
@@ -55,13 +55,13 @@ impl dfu_core::DfuIo for DfuNusb {
         buffer: &mut [u8],
     ) -> Result<Self::Read, Self::Error> {
         let (control_type, recipient) = explode_request_type(request_type);
-        let res = self.usb.control_in_blocking(
+        let res = self.iface.control_in_blocking(
             Control {
                 control_type,
                 recipient,
                 request,
                 value,
-                index: self.iface,
+                index: self.iface.interface_number() as u16,
             },
             buffer,
             self.timeout,
@@ -78,13 +78,13 @@ impl dfu_core::DfuIo for DfuNusb {
         buffer: &[u8],
     ) -> Result<Self::Write, Self::Error> {
         let (control_type, recipient) = explode_request_type(request_type);
-        let res = self.usb.control_out_blocking(
+        let res = self.iface.control_out_blocking(
             Control {
                 control_type,
                 recipient,
                 request,
                 value,
-                index: self.iface,
+                index: self.iface.interface_number() as u16,
             },
             buffer,
             self.timeout,
@@ -93,7 +93,7 @@ impl dfu_core::DfuIo for DfuNusb {
     }
 
     fn usb_reset(&self) -> Result<Self::Reset, Self::Error> {
-        Ok(self.usb.reset()?)
+        Ok(self.dev.reset()?)
     }
 
     fn protocol(&self) -> &DfuProtocol<Self::MemoryLayout> {
@@ -148,10 +148,10 @@ impl DfuNusb {
                         )?;
 
                         let io = DfuNusb {
-                            usb: device.clone(),
+                            dev: device.clone(),
+                            iface: iface,
                             protocol,
                             timeout,
-                            iface: iface_num as u16,
                             functional_descriptor: func_desc,
                         };
 
