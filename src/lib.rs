@@ -141,7 +141,8 @@ impl DfuNusb {
                     if let Some(string_ix) = setting.string_index() {
                         let iface_string = device.get_string_descriptor(
                             string_ix, 0, Duration::from_millis(1000)
-                        )?;
+                        )?.trim_end_matches('\0').to_string();
+
                         let protocol = dfu_core::DfuProtocol::new(
                             &iface_string,
                             func_desc.dfu_version,
