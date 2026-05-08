@@ -131,8 +131,7 @@ dependencies = [
 [[package]]
 name = "dfu-core"
 version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37d22eb1608d4e74a04cfee0ac99c9b6e7ef9ed509b9c6e1caf54510c171ee1a"
+source = "git+https://github.com/anti-social/dfu-core.git?rev=a11c8a2#a11c8a2ed474dbad00c2f28e22ff9c61bc1b39ab"
 dependencies = [
  "bytes",
  "displaydoc",
