@@ -7,7 +7,7 @@ use nusb::descriptors::ConfigurationDescriptor;
 use nusb::transfer::{ControlIn, ControlOut, ControlType, Recipient, TransferError};
 use thiserror::Error;
 
-pub type Dfu = dfu_core::sync::DfuSync<DfuNusb, Error>;
+pub type Dfu = dfu_core::synchronous::DfuSync<DfuNusb, Error>;
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -97,7 +97,7 @@ impl dfu_core::DfuIo for DfuNusb {
         Ok(buffer.len())
     }
 
-    fn usb_reset(&self) -> Result<Self::Reset, Self::Error> {
+    fn usb_reset(self) -> Result<Self::Reset, Self::Error> {
         Ok(self.dev.reset().wait()?)
     }
 
@@ -162,7 +162,7 @@ impl DfuNusb {
                             functional_descriptor: func_desc,
                         };
 
-                        return Ok(dfu_core::sync::DfuSync::new(io));
+                        return Ok(dfu_core::synchronous::DfuSync::new(io));
                     }
                 }
         }
